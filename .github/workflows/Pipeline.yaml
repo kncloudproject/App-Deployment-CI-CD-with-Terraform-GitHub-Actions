@@ -8,7 +8,7 @@ env:
   AWS_REGION: us-east-1
   TERRAFORM_ACTION: apply
   GITHUB_USERNAME: kncloudproject
-  REPOSITORY_NAME: application-codes
+  REPOSITORY_NAME: jupiter-project
   WEB_FILE_ZIP: rentzone.zip
   WEB_FILE_UNZIP: rentzone
   FLYWAY_VERSION: 9.8.1
@@ -176,6 +176,13 @@ jobs:
     if: needs.deploy_aws_infrastructure.outputs.terraform_action != 'destroy'
     runs-on: ubuntu-latest
     steps:
+      - name: Configure AWS Credentials  # <--- Add this step!
+        uses: aws-actions/configure-aws-credentials@v1-node16
+        with:
+            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            aws-region: us-east-1
+        
       - name: Checkout Repository
         uses: actions/checkout@v3
 
