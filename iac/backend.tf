@@ -1,9 +1,9 @@
 # store the terraform state file in s3 and lock with dynamodb
 terraform {
   backend "s3" {
-    bucket         = "kn-pbl-terraform-statefile-ci"
+    bucket         = "kn-pbl-terraform-statefile-jupiter"
     key            = "jupiter/terraform.tfstate"
     region         = "us-east-1"
-    dynamodb_table = "kn-pbl-terraform-locks"
+    dynamodb_table = "kn-pbl-terraform-locks-jupiter"
   }
 }
