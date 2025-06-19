@@ -311,6 +311,7 @@ jobs:
       - deploy_aws_infrastructure 
       - create_ecr_repository
       - build_and_push_image
+      - create_td_revision
     if: needs.deploy_aws_infrastructure.outputs.terraform_action != 'destroy'
     runs-on: ubuntu-latest
     steps:
