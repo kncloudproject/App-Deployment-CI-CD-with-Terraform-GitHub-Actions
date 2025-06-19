@@ -259,7 +259,8 @@ jobs:
         run: |
             docker push $ECR_REGISTRY/$IMAGE_NAME:$IMAGE_TAG
 
-              # Create new task definition revision
+
+# Create new task definition revision
   create_td_revision:
     name: Create New Task Definition Revision
     needs: 
@@ -269,6 +270,13 @@ jobs:
     if: needs.deploy_aws_infrastructure.outputs.terraform_action != 'destroy'
     runs-on: ubuntu-latest
     steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            aws-region: ${{ env.AWS_REGION }}
+
       - name: Create new task definition revision
         env:
           ECS_FAMILY: ${{ needs.deploy_aws_infrastructure.outputs.task_definition_name }}
@@ -295,7 +303,6 @@ jobs:
       new_td_revision: ${{ env.NEW_TD_REVISION }}
 
 
-
   # Restart ECS Fargate service
   restart_ecs_service:
     name: Restart ECS Fargate Service
@@ -307,6 +314,13 @@ jobs:
     if: needs.deploy_aws_infrastructure.outputs.terraform_action != 'destroy'
     runs-on: ubuntu-latest
     steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            aws-region: ${{ env.AWS_REGION }}
+
       - name: Update ECS Service
         env:
           ECS_CLUSTER_NAME: ${{ needs.deploy_aws_infrastructure.outputs.ecs_cluster_name }}
@@ -321,3 +335,4 @@ jobs:
           ECS_SERVICE_NAME: ${{ needs.deploy_aws_infrastructure.outputs.ecs_service_name }}
         run: |
           aws ecs wait services-stable --cluster ${{ env.ECS_CLUSTER_NAME }} --services ${{ env.ECS_SERVICE_NAME }}
+
