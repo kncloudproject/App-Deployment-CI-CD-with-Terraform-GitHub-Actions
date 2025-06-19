@@ -2,7 +2,7 @@
 terraform {
   backend "s3" {
     bucket         = "kn-pbl-terraform-statefile-ci"
-    key            = "cicd/jupiter/terraform.tfstate"
+    key            = "jupiter/terraform.tfstate"
     region         = "us-east-1"
     dynamodb_table = "kn-pbl-terraform-locks"
   }
