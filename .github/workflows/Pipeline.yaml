@@ -339,7 +339,9 @@ jobs:
 
   display_domain_name:
     name: Show Deployment Access Info
-    needs: deploy_aws_infrastructure
+    needs: 
+        - deploy_aws_infrastructure
+        - restart_ecs_service
     if: needs.deploy_aws_infrastructure.outputs.terraform_action != 'destroy'
     runs-on: ubuntu-latest
     steps:
