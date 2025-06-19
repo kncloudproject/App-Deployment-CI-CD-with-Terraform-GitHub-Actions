@@ -165,3 +165,37 @@ jobs:
       ecs_service_name: ${{ env.ECS_SERVICE_NAME }}
       environment_file_name: ${{ env.ENVIRONMENT_FILE_NAME }}
       env_file_bucket_name: ${{ env.ENV_FILE_BUCKET_NAME }}
+
+
+# Create ECR Repository
+  create_ecr_repository:
+    name: Create ECR Repository
+    needs: 
+      - configure_aws_credentials
+      - deploy_aws_infrastructure
+    if: needs.deploy_aws_infrastructure.outputs.terraform_action != 'destroy'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Check if ECR Repository Exists
+        env:
+          IMAGE_NAME: ${{ needs.deploy_aws_infrastructure.outputs.image_name }}
+        run: |
+          result=$(aws ecr describe-repositories --repository-names "${{ env.IMAGE_NAME }}" | jq -r '.repositories[0].repositoryName')
+          echo "repo_name=$result" >> $GITHUB_ENV
+        continue-on-error: true
+
+      - name: Create ECR Repository
+        env:
+          IMAGE_NAME: ${{ needs.deploy_aws_infrastructure.outputs.image_name }}
+          REPO_NAME: ${{ env.repo_name }}
+
+        run: |
+          if [ "$REPO_NAME" != "$IMAGE_NAME" ] || [ -z "$REPO_NAME" ]; then
+            echo "Repository doesn't exist. Creating $IMAGE_NAME ..."
+            aws ecr create-repository --repository-name "$IMAGE_NAME"
+          else
+            echo "Repository $IMAGE_NAME already exists."
+          fi
