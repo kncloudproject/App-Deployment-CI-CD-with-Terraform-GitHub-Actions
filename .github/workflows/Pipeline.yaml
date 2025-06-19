@@ -337,3 +337,14 @@ jobs:
         run: |
           aws ecs wait services-stable --cluster ${{ env.ECS_CLUSTER_NAME }} --services ${{ env.ECS_SERVICE_NAME }}
 
+  display_domain_name:
+    name: Show Deployment Access Info
+    needs: deploy_aws_infrastructure
+    if: needs.deploy_aws_infrastructure.outputs.terraform_action != 'destroy'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print Access Instructions
+        run: |
+          echo "✅ Deployment Completed Successfully!"
+          echo "🌐 Access the Application Here:"
+          echo "🔗 https://${{ needs.deploy_aws_infrastructure.outputs.domain_name }}"
