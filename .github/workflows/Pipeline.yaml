@@ -6,7 +6,7 @@ on:
 
 env:
   AWS_REGION: us-east-1
-  TERRAFORM_ACTION: destroy
+  TERRAFORM_ACTION: apply
   GITHUB_USERNAME: kncloudproject
   REPOSITORY_NAME: jupiter-project
   WEB_FILE_ZIP: rentzone.zip
