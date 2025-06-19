@@ -56,7 +56,7 @@ jobs:
           terraform_version: 1.1.7
 
       - name: Run Terraform Initialize
-        run: terraform init
+        run: terraform init -upgrade
 
       - name: Run Terraform Plan
         run: terraform plan -out=tfplan.out
