@@ -206,3 +206,55 @@ jobs:
           else
             echo "Repository $IMAGE_NAME already exists."
           fi
+
+  build_and_push_image:
+    name: Build & Push Docker Image to ECR
+    runs-on: ubuntu-latest
+    needs:
+      - configure_aws_credentials
+      - deploy_aws_infrastructure
+      - create_ecr_repository
+    if: needs.deploy_aws_infrastructure.outputs.terraform_action != 'destroy'
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Clone Jupiter Project Repo
+        run: |
+            git clone https://kncloudproject:${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/${{ env.GITHUB_USERNAME }}/${{ env.REPOSITORY_NAME }}.git ./jupiter-project
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            aws-region: ${{ env.AWS_REGION }}
+
+      - name: Build Docker Image from External Repo
+        env:
+            IMAGE_NAME: ${{ needs.deploy_aws_infrastructure.outputs.image_name }}
+            IMAGE_TAG: ${{ needs.deploy_aws_infrastructure.outputs.image_tag }}
+        run: |
+            docker build -t $IMAGE_NAME:$IMAGE_TAG ./jupiter-project
+
+      - name: Get ECR Registry
+        id: ecr
+        run: |
+            echo "ECR_REGISTRY=$(aws sts get-caller-identity --query Account --output text).dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com" >> $GITHUB_ENV
+
+      - name: Retag Docker Image
+        env:
+            IMAGE_NAME: ${{ needs.deploy_aws_infrastructure.outputs.image_name }}
+            IMAGE_TAG: ${{ needs.deploy_aws_infrastructure.outputs.image_tag }}
+        run: |
+            docker tag $IMAGE_NAME:$IMAGE_TAG $ECR_REGISTRY/$IMAGE_NAME:$IMAGE_TAG
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Push Docker Image to Amazon ECR
+        env:
+            IMAGE_NAME: ${{ needs.deploy_aws_infrastructure.outputs.image_name }}
+            IMAGE_TAG: ${{ needs.deploy_aws_infrastructure.outputs.image_tag }}
+        run: |
+            docker push $ECR_REGISTRY/$IMAGE_NAME:$IMAGE_TAG
