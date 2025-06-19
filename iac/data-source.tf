@@ -1,6 +1,6 @@
 # retrieve the secret value stored in secrets manager and parse it as a json object
 data "aws_secretsmanager_secret" "secrets" {
-  name = "rentzone-app-dev-secrets"
+  name = "jupiter-app-dev-secrets"
 }
 
 data "aws_secretsmanager_secret_version" "secrets" {
